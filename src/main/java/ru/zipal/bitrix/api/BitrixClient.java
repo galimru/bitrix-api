@@ -1,54 +1,137 @@
 package ru.zipal.bitrix.api;
 
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.http.NameValuePair;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class BitrixClient {
-    public static final String URL_FORMAT = "https://%s/rest/%s.json?auth=%s";
-    public static final String TOKEN_URL_FORMAT = "https://%s/oauth/token/?client_id=%s&client_secret=%s&grant_type=refresh_token&refresh_token=%s";
-    public static final String REFRESH_TOKEN = "refresh_token";
-    public static final String ACCESS_TOKEN = "access_token";
 
-    private final BitrixHttpClient httpClient;
-    private final String appId;
-    private final String appSecret;
+    private final Logger logger = LoggerFactory.getLogger(BitrixClient.class);
 
-    public BitrixClient(BitrixHttpClient httpClient, String appId, String appSecret) {
-        this.httpClient = httpClient;
-        this.appId = appId;
-        this.appSecret = appSecret;
+    public static final String API_URL_FORMAT = "https://%s/rest/%s.json?auth=%s";
+    public static final String ACCESS_TOKEN_ENDPOINT_FORMAT = "https://%s/oauth/token";
+    public static final String AUTHORIZATION_BASE_URL_FORMAT = "https://%s/oauth/authorize";
+
+    private OAuth20Service service;
+    private OAuth2AccessToken accessToken;
+    private String domain;
+
+    public BitrixClient(String domain, String apiKey, String apiSecret, String redirectUri) {
+        this.domain = domain;
+        String accessTokenEndpoint = String.format(ACCESS_TOKEN_ENDPOINT_FORMAT, domain);
+        String authorizationBaseUrl = String.format(AUTHORIZATION_BASE_URL_FORMAT, domain);
+        service = new ServiceBuilder(apiKey)
+                .apiSecret(apiSecret)
+                .callback(redirectUri)
+                .build(new BitrixApi20(accessTokenEndpoint, authorizationBaseUrl));
     }
 
-    private String getUrl(String domain, String method, String accessToken) {
-        return String.format(URL_FORMAT, domain, method, accessToken);
+    public String getAuthorizationUrl() {
+        return service.createAuthorizationUrlBuilder().build();
     }
 
-    private String getTokenUrl(String domain, String refreshToken) {
-        return String.format(TOKEN_URL_FORMAT, domain, appId, appSecret, refreshToken);
+    public void authorize(String code) throws InterruptedException, ExecutionException, IOException {
+        accessToken = service.getAccessToken(code);
     }
 
-    public JSONObject execute(String domain, String method, List<NameValuePair> params, Tokens tokens) throws BitrixApiException {
+    public void setAccessToken(String accessToken, String refreshToken) {
+        this.accessToken = new OAuth2AccessToken(accessToken, null, null, refreshToken, null, null);
+    }
+
+    public String getAccessToken() throws UnauthorizedBitrixApiException {
+        checkAuthorize();
+        return accessToken.getAccessToken();
+    }
+
+    public String getRefreshToken() throws UnauthorizedBitrixApiException {
+        checkAuthorize();
+
+        return accessToken.getRefreshToken();
+    }
+
+    public JSONObject get(String method, List<NameValuePair> params) throws BitrixApiException {
+
+        checkAuthorize();
+
+        String apiUrl = String.format(API_URL_FORMAT, domain, method, accessToken.getAccessToken());
+
+        OAuthRequest request = new OAuthRequest(Verb.GET, apiUrl);
+        if (params != null) {
+            params.forEach(param ->
+                    request.addParameter(param.getName(), param.getValue()));
+        }
+
+        return execute(request);
+    }
+
+    public JSONObject post(String method, List<NameValuePair> params) throws BitrixApiException {
+
+        checkAuthorize();
+
+        String apiUrl = String.format(API_URL_FORMAT, domain, method, accessToken.getAccessToken());
+
+        OAuthRequest request = new OAuthRequest(Verb.POST, apiUrl);
+        if (params != null) {
+            params.forEach(param ->
+                    request.addBodyParameter(param.getName(), param.getValue()));
+        }
+
+        return execute(request);
+    }
+
+    public void checkAuthorize() throws UnauthorizedBitrixApiException {
+        if (accessToken == null) {
+            throw new UnauthorizedBitrixApiException("Access Token is not exists, authorize first");
+        }
+    }
+
+    private JSONObject execute(OAuthRequest request) throws BitrixApiException {
+
+        logger.info("Request {} - {}", request.getVerb(), request.getUrl());
+
+        Response response;
         try {
-            return httpClient.post(getUrl(domain, method, tokens.getAccessToken()), params);
-        } catch (UnauthorizedBitrixApiException e) {
-            final String newAccessToken = getAccessToken(domain, tokens);
-            return httpClient.post(getUrl(domain, method, newAccessToken), params);
-        }
-    }
+            response = service.execute(request);
 
-    public String getAccessToken(String domain, Tokens tokens) throws BitrixApiException {
-        final JSONObject json = httpClient.get(getTokenUrl(domain, tokens.getRefreshToken()));
-        final String newRefreshToken;
-        if (json.has(REFRESH_TOKEN)) {
-            newRefreshToken = json.getString(REFRESH_TOKEN);
-        } else {
-            newRefreshToken = null;
+            if (response.getCode() == 400 && accessToken.getRefreshToken() != null) {
+
+                logger.info("Access Token expired, try to retrieve new one");
+
+                accessToken = service.refreshAccessToken(accessToken.getRefreshToken());
+                if (accessToken != null) {
+                    response = service.execute(request);
+                } else {
+                    logger.info("Cannot retrieve new Access Token using Refresh Token");
+                }
+            }
+
+        } catch (Exception e) {
+            throw new BitrixApiException(String.format("An error occurred while execute request %s", request.getUrl()));
         }
-        final String newAccessToken = json.getString(ACCESS_TOKEN);
-        tokens.updateTokens(newAccessToken, newRefreshToken);
-        return newAccessToken;
+
+        String responseBody;
+        try {
+            responseBody = response.getBody();
+        } catch (IOException e) {
+            throw new BitrixApiException(e);
+        }
+
+        if (!response.isSuccessful()) {
+            throw new BitrixApiHttpException(responseBody, response.getCode());
+        }
+
+        return new JSONObject(responseBody);
     }
 
 }

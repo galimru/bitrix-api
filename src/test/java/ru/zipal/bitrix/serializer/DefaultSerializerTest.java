@@ -8,7 +8,7 @@ import org.junit.Test;
 import ru.zipal.bitrix.api.BitrixApiException;
 import ru.zipal.bitrix.api.model.BitrixActivity;
 import ru.zipal.bitrix.api.model.BitrixUser;
-import ru.zipal.bitrix.api.serialize.Serializer;
+import ru.zipal.bitrix.api.serialize.DefaultSerializer;
 
 import java.util.List;
 import java.util.Map;
@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 
 import static org.testng.Assert.assertEquals;
 
-public class SerializerTest {
+public class DefaultSerializerTest {
     public static final String JSON_FORMAT = "{\"DESCRIPTION\": \"%s\", \"RESPONSIBLE_ID\": %s}";
-    private final Serializer serializer = new Serializer();
+    private final DefaultSerializer serializer = new DefaultSerializer();
 
     @Test
     public void serialize() {
