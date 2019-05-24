@@ -26,6 +26,7 @@ public class BitrixClient {
     private OAuth20Service service;
     private OAuth2AccessToken accessToken;
     private String domain;
+    private AccessTokenListener accessTokenListener;
 
     public BitrixClient(String domain, String apiKey, String apiSecret, String redirectUri) {
         this.domain = domain;
@@ -43,6 +44,13 @@ public class BitrixClient {
 
     public void authorize(String code) throws InterruptedException, ExecutionException, IOException {
         accessToken = service.getAccessToken(code);
+        if (accessToken != null) {
+            fireAccessTokenReceived(accessToken);
+        }
+    }
+
+    public void setAccessTokenListener(AccessTokenListener accessTokenListener) {
+        this.accessTokenListener = accessTokenListener;
     }
 
     public void setAccessToken(String accessToken, String refreshToken) {
@@ -110,6 +118,7 @@ public class BitrixClient {
 
                 accessToken = service.refreshAccessToken(accessToken.getRefreshToken());
                 if (accessToken != null) {
+                    fireAccessTokenReceived(accessToken);
                     response = service.execute(request);
                 } else {
                     logger.info("Cannot retrieve new Access Token using Refresh Token");
@@ -132,6 +141,16 @@ public class BitrixClient {
         }
 
         return new JSONObject(responseBody);
+    }
+
+    private void fireAccessTokenReceived(OAuth2AccessToken accessToken) {
+        if (accessTokenListener != null) {
+            accessTokenListener.onReceived(accessToken);
+        }
+    }
+
+    public interface AccessTokenListener {
+        void onReceived(OAuth2AccessToken accessToken);
     }
 
 }
