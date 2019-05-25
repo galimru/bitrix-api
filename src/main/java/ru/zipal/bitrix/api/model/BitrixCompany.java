@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class BitrixCompany implements BitrixEntity {
+public class BitrixCompany implements HasId {
 	private Long id;
 	private String name;
 	@FieldName("DATE_CREATE")

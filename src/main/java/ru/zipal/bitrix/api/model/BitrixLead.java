@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class BitrixLead implements BitrixEntity {
+public class BitrixLead implements HasId {
 	private Long id;
 	private YesNo opened = YesNo.YES;
 	private String name;

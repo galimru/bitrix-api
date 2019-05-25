@@ -3,9 +3,7 @@ package ru.zipal.bitrix.api.model;
 import ru.zipal.bitrix.api.common.FieldName;
 import ru.zipal.bitrix.api.model.enums.CommunicationType;
 
-public class BitrixCommunication implements BitrixEntity {
-
-	private Long id;
+public class BitrixCommunication {
 	private String value;
 	@FieldName("VALUE_TYPE")
 	private CommunicationType type = CommunicationType.WORK;
@@ -44,15 +42,5 @@ public class BitrixCommunication implements BitrixEntity {
 				"value='" + value + '\'' +
 				", type=" + type +
 				'}';
-	}
-
-	@Override
-	public Long getId() {
-		return id;
-	}
-
-	@Override
-	public void setId(Long id) {
-		this.id = id;
 	}
 }
