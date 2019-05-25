@@ -1,10 +1,7 @@
 package ru.zipal.bitrix.api;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
-import com.github.scribejava.core.model.OAuth2AccessToken;
-import com.github.scribejava.core.model.OAuthRequest;
-import com.github.scribejava.core.model.Response;
-import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.http.NameValuePair;
 import org.json.JSONObject;
@@ -19,7 +16,8 @@ public class BitrixClient {
 
     private final Logger logger = LoggerFactory.getLogger(BitrixClient.class);
 
-    public static final String API_URL_FORMAT = "https://%s/rest/%s.json?auth=%s";
+    public static final String AUTH_QUERY_KEY = "auth";
+    public static final String API_URL_FORMAT = "https://%s/rest/%s.json";
     public static final String ACCESS_TOKEN_ENDPOINT_FORMAT = "https://%s/oauth/token";
     public static final String AUTHORIZATION_BASE_URL_FORMAT = "https://%s/oauth/authorize";
 
@@ -70,9 +68,7 @@ public class BitrixClient {
 
     public JSONObject get(String method, List<NameValuePair> params) throws BitrixApiException {
 
-        checkAuthorize();
-
-        String apiUrl = String.format(API_URL_FORMAT, domain, method, accessToken.getAccessToken());
+        String apiUrl = String.format(API_URL_FORMAT, domain, method);
 
         OAuthRequest request = new OAuthRequest(Verb.GET, apiUrl);
         if (params != null) {
@@ -85,14 +81,12 @@ public class BitrixClient {
 
     public JSONObject post(String method, List<NameValuePair> params) throws BitrixApiException {
 
-        checkAuthorize();
-
-        String apiUrl = String.format(API_URL_FORMAT, domain, method, accessToken.getAccessToken());
+        String apiUrl = String.format(API_URL_FORMAT, domain, method);
 
         OAuthRequest request = new OAuthRequest(Verb.POST, apiUrl);
         if (params != null) {
             params.forEach(param ->
-                    request.addBodyParameter(param.getName(), param.getValue()));
+                    request.addParameter(param.getName(), param.getValue()));
         }
 
         return execute(request);
@@ -108,8 +102,11 @@ public class BitrixClient {
 
         logger.info("Request {} - {}", request.getVerb(), request.getUrl());
 
+        checkAuthorize();
+
         Response response;
         try {
+            signRequest(request, accessToken.getAccessToken());
             response = service.execute(request);
 
             if (response.getCode() == 401 && accessToken.getRefreshToken() != null) {
@@ -119,6 +116,8 @@ public class BitrixClient {
                 accessToken = service.refreshAccessToken(accessToken.getRefreshToken());
                 if (accessToken != null) {
                     fireAccessTokenReceived(accessToken);
+
+                    signRequest(request, accessToken.getAccessToken());
                     response = service.execute(request);
                 } else {
                     logger.info("Cannot retrieve new Access Token using Refresh Token");
@@ -141,6 +140,12 @@ public class BitrixClient {
         }
 
         return new JSONObject(responseBody);
+    }
+
+    private void signRequest(OAuthRequest request, String accessToken) {
+        request.getQueryStringParams().getParams()
+                .removeIf(parameter -> parameter.getKey().equalsIgnoreCase(AUTH_QUERY_KEY));
+        request.addQuerystringParameter(AUTH_QUERY_KEY, accessToken);
     }
 
     private void fireAccessTokenReceived(OAuth2AccessToken accessToken) {
