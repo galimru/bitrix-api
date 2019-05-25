@@ -119,7 +119,7 @@ public class BitrixClient {
             }
 
         } catch (Exception e) {
-            throw new BitrixApiException(String.format("An error occurred while execute request %s", url));
+            throw new BitrixApiException(String.format("An error occurred while execute request %s", url), e);
         }
 
         String responseBody;
