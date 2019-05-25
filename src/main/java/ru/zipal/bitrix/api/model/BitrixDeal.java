@@ -73,7 +73,7 @@ public class BitrixDeal implements BitrixEntity {
 	@FieldName("OPENED")
 	private Boolean opened;
     @FieldName("IS_REPEATED_APPROACH")
-    private Boolean isRepeatedApproach;
+    private String isRepeatedApproach;
     @FieldName("COMMENTS")
     private String comments;
     @FieldName("ADDITIONAL_INFO")
@@ -217,11 +217,11 @@ public class BitrixDeal implements BitrixEntity {
         this.opened = opened;
     }
 
-    public Boolean getRepeatedApproach() {
+    public String getRepeatedApproach() {
         return isRepeatedApproach;
     }
 
-    public void setRepeatedApproach(Boolean repeatedApproach) {
+    public void setRepeatedApproach(String repeatedApproach) {
         isRepeatedApproach = repeatedApproach;
     }
 
