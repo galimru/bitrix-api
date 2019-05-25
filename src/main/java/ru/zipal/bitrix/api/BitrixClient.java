@@ -112,7 +112,7 @@ public class BitrixClient {
         try {
             response = service.execute(request);
 
-            if (response.getCode() == 400 && accessToken.getRefreshToken() != null) {
+            if (response.getCode() == 401 && accessToken.getRefreshToken() != null) {
 
                 logger.info("Access Token expired, try to retrieve new one");
 
