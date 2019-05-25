@@ -26,6 +26,7 @@ public class BitrixDeal implements BitrixEntity {
 	"IS_RECURRING": "N",
 	"LEAD_ID": null,
 	"UTM_MEDIUM": null,
+
 	"UTM_CONTENT": null,
 	"LOCATION_ID": null,
 	"BEGINDATE": "2019-05-19T03:00:00+03:00",
