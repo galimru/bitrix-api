@@ -25,4 +25,14 @@ public class BitrixAuthService extends OAuth20Service {
 
         return request;
     }
+
+    @Override
+    protected OAuthRequest createRefreshTokenRequest(String refreshToken, String scope) {
+        OAuthRequest request = super.createRefreshTokenRequest(refreshToken, scope);
+
+        request.addParameter(CLIENT_ID_KEY, getApiKey());
+        request.addParameter(CLIENT_SECRET_KEY, getApiSecret());
+
+        return request;
+    }
 }
