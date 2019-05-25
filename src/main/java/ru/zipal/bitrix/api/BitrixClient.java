@@ -67,29 +67,13 @@ public class BitrixClient {
     }
 
     public JSONObject get(String method, List<NameValuePair> params) throws BitrixApiException {
-
         String apiUrl = String.format(API_URL_FORMAT, domain, method);
-
-        OAuthRequest request = new OAuthRequest(Verb.GET, apiUrl);
-        if (params != null) {
-            params.forEach(param ->
-                    request.addParameter(param.getName(), param.getValue()));
-        }
-
-        return execute(request);
+        return execute(Verb.GET, apiUrl, params);
     }
 
     public JSONObject post(String method, List<NameValuePair> params) throws BitrixApiException {
-
         String apiUrl = String.format(API_URL_FORMAT, domain, method);
-
-        OAuthRequest request = new OAuthRequest(Verb.POST, apiUrl);
-        if (params != null) {
-            params.forEach(param ->
-                    request.addParameter(param.getName(), param.getValue()));
-        }
-
-        return execute(request);
+        return execute(Verb.POST, apiUrl, params);
     }
 
     public void checkAuthorize() throws UnauthorizedBitrixApiException {
@@ -98,15 +82,25 @@ public class BitrixClient {
         }
     }
 
-    private JSONObject execute(OAuthRequest request) throws BitrixApiException {
+    private OAuthRequest createRequest(Verb verb, String url, List<NameValuePair> params) {
+        OAuthRequest request = new OAuthRequest(verb, url);
+        if (params != null) {
+            params.forEach(param ->
+                    request.addParameter(param.getName(), param.getValue()));
+        }
+        request.addQuerystringParameter(AUTH_QUERY_KEY, accessToken.getAccessToken());
+        return request;
+    }
 
-        logger.info("Request {} - {}", request.getVerb(), request.getUrl());
+    private JSONObject execute(Verb verb, String url, List<NameValuePair> params) throws BitrixApiException {
+
+        logger.info("Request {} - {}", verb, url);
 
         checkAuthorize();
 
         Response response;
         try {
-            signRequest(request, accessToken.getAccessToken());
+            OAuthRequest request = createRequest(verb, url, params);
             response = service.execute(request);
 
             if (response.getCode() == 401 && accessToken.getRefreshToken() != null) {
@@ -117,7 +111,7 @@ public class BitrixClient {
                 if (accessToken != null) {
                     fireAccessTokenReceived(accessToken);
 
-                    signRequest(request, accessToken.getAccessToken());
+                    request = createRequest(verb, url, params);
                     response = service.execute(request);
                 } else {
                     logger.info("Cannot retrieve new Access Token using Refresh Token");
@@ -125,7 +119,7 @@ public class BitrixClient {
             }
 
         } catch (Exception e) {
-            throw new BitrixApiException(String.format("An error occurred while execute request %s", request.getUrl()));
+            throw new BitrixApiException(String.format("An error occurred while execute request %s", url));
         }
 
         String responseBody;
@@ -140,12 +134,6 @@ public class BitrixClient {
         }
 
         return new JSONObject(responseBody);
-    }
-
-    private void signRequest(OAuthRequest request, String accessToken) {
-        request.getQueryStringParams().getParams()
-                .removeIf(parameter -> parameter.getKey().equalsIgnoreCase(AUTH_QUERY_KEY));
-        request.addQuerystringParameter(AUTH_QUERY_KEY, accessToken);
     }
 
     private void fireAccessTokenReceived(OAuth2AccessToken accessToken) {
