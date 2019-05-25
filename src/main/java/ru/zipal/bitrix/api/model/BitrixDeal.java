@@ -321,11 +321,11 @@ public class BitrixDeal implements BitrixEntity {
         this.closeDate = closeDate;
     }
 
-    public Boolean getReturnCustomer() {
+    public String  getReturnCustomer() {
         return isReturnCustomer;
     }
 
-    public void setReturnCustomer(Boolean returnCustomer) {
+    public void setReturnCustomer(String returnCustomer) {
         isReturnCustomer = returnCustomer;
     }
 
