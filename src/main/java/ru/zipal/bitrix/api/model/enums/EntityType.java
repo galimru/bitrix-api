@@ -1,19 +1,20 @@
 package ru.zipal.bitrix.api.model.enums;
 
 public enum EntityType {
-    USER("user.get"),
-    ACTIVITY("crm.activity.get"),
-    CONTACT("crm.contact.get"),
-    LEAD("crm.lead.get"),
-    COMPANY("crm.company.get");
+    USER("user"),
+    ACTIVITY("crm.activity"),
+    CONTACT("crm.contact"),
+    LEAD("crm.lead"),
+    DEAL("crm.deal"),
+    COMPANY("crm.company");
 
-    private final String getMethod;
+    private String name;
 
-    EntityType(String getMethod) {
-        this.getMethod = getMethod;
+    EntityType(String name) {
+        this.name = name;
     }
 
-    public String getGetMethod() {
-        return getMethod;
+    public String getName() {
+        return name;
     }
 }
