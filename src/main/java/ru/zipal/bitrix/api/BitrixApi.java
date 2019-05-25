@@ -48,7 +48,11 @@ public class BitrixApi {
 
     private void registerDefaultEntities() {
         registerEntity(EntityType.DEAL, BitrixDeal.class);
-        // TODO add default entities
+        registerEntity(EntityType.LEAD, BitrixLead.class);
+        registerEntity(EntityType.CONTACT, BitrixContact.class);
+        registerEntity(EntityType.COMPANY, BitrixCompany.class);
+        registerEntity(EntityType.ACTIVITY, BitrixActivity.class);
+        registerEntity(EntityType.USER, BitrixUser.class);
     }
 
     public String getAuthorizationUrl() {
