@@ -1,6 +1,7 @@
 package ru.zipal.bitrix.api.model;
 
 import ru.zipal.bitrix.api.common.FieldName;
+import ru.zipal.bitrix.api.model.enums.YesNo;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -73,7 +74,7 @@ public class BitrixDeal implements BitrixEntity {
 	@FieldName("OPENED")
 	private Boolean opened;
     @FieldName("IS_REPEATED_APPROACH")
-    private Character isRepeatedApproach;
+    private YesNo isRepeatedApproach;
     @FieldName("COMMENTS")
     private String comments;
     @FieldName("ADDITIONAL_INFO")
@@ -99,7 +100,7 @@ public class BitrixDeal implements BitrixEntity {
     @FieldName("CLOSEDATE")
     private Date closeDate;
     @FieldName("IS_RETURN_CUSTOMER")
-    private String isReturnCustomer;
+    private YesNo isReturnCustomer;
     @FieldName("QUOTE_ID")
     private String quoteId;
     @FieldName("CREATED_BY_ID")
@@ -217,11 +218,11 @@ public class BitrixDeal implements BitrixEntity {
         this.opened = opened;
     }
 
-    public Character getRepeatedApproach() {
+    public YesNo getRepeatedApproach() {
         return isRepeatedApproach;
     }
 
-    public void setRepeatedApproach(Character repeatedApproach) {
+    public void setRepeatedApproach(YesNo repeatedApproach) {
         isRepeatedApproach = repeatedApproach;
     }
 
@@ -321,11 +322,11 @@ public class BitrixDeal implements BitrixEntity {
         this.closeDate = closeDate;
     }
 
-    public String  getReturnCustomer() {
+    public YesNo  getReturnCustomer() {
         return isReturnCustomer;
     }
 
-    public void setReturnCustomer(String returnCustomer) {
+    public void setReturnCustomer(YesNo returnCustomer) {
         isReturnCustomer = returnCustomer;
     }
 
