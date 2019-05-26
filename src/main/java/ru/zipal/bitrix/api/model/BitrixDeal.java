@@ -99,7 +99,7 @@ public class BitrixDeal implements BitrixEntity {
     private Date beginDate;
     @FieldName("CLOSEDATE")
     private Date closeDate;
-    @FieldName("IS_RETURN_CUSTOMER")
+   // @FieldName("IS_RETURN_CUSTOMER")
     private YesNo isReturnCustomer;
     @FieldName("QUOTE_ID")
     private String quoteId;
