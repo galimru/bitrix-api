@@ -100,7 +100,7 @@ public class BitrixDeal implements BitrixEntity {
     @FieldName("CLOSEDATE")
     private Date closeDate;
     @FieldName("IS_RETURN_CUSTOMER")
-    private YesNo isReturnCustomer = YesNo.NO;
+    private YesNo returnCustomer = YesNo.NO;
     @FieldName("QUOTE_ID")
     private String quoteId;
     @FieldName("CREATED_BY_ID")
@@ -323,11 +323,11 @@ public class BitrixDeal implements BitrixEntity {
     }
 
     public YesNo  getReturnCustomer() {
-        return isReturnCustomer;
+        return returnCustomer;
     }
 
     public void setReturnCustomer(YesNo returnCustomer) {
-        isReturnCustomer = returnCustomer;
+        returnCustomer = returnCustomer;
     }
 
     public String getQuoteId() {
