@@ -129,15 +129,15 @@ public class BitrixDeal implements BitrixEntity {
     private String sourceDescription;
     @FieldName("OPPORTUNITY")
     private BigDecimal opportunity;
-    @FieldName("UF_CRM_1558819201336")
-    private Double UF_CRM_1558819201336;
+    @FieldName("UF_CRM_1558874728422")
+    private Double UF_CRM_1558874728422;
 
-    public Double getUF_CRM_1558819201336() {
-        return UF_CRM_1558819201336;
+    public Double getUF_CRM_1558874728422() {
+        return UF_CRM_1558874728422;
     }
 
-    public void setUF_CRM_1558819201336(Double UF_CRM_1558819201336) {
-        this.UF_CRM_1558819201336 = UF_CRM_1558819201336;
+    public void setUF_CRM_1558874728422(Double UF_CRM_1558874728422) {
+        this.UF_CRM_1558874728422 = UF_CRM_1558874728422;
     }
 
     public Long getId() {
