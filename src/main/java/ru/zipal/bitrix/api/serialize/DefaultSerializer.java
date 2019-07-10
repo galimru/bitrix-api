@@ -118,6 +118,7 @@ public class DefaultSerializer implements Serializer {
                         }
                     }
                 } else if (BitrixFile.class.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
                     BitrixFile bitrixFile = (BitrixFile) field.get(what);
                     addFileField(result, getFieldName(field), bitrixFile);
                 } else {
