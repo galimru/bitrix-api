@@ -10,6 +10,7 @@ import ru.zipal.bitrix.api.BitrixApiException;
 import ru.zipal.bitrix.api.common.BitrixEnum;
 import ru.zipal.bitrix.api.common.FieldName;
 import ru.zipal.bitrix.api.model.BitrixEntity;
+import ru.zipal.bitrix.api.model.BitrixFile;
 import ru.zipal.bitrix.api.model.enums.*;
 
 import java.lang.reflect.Field;
@@ -116,6 +117,9 @@ public class DefaultSerializer implements Serializer {
                             }
                         }
                     }
+                } else if (BitrixFile.class.isAssignableFrom(field.getType())) {
+                    BitrixFile bitrixFile = (BitrixFile) field.get(what);
+                    addFileField(result, getFieldName(field), bitrixFile);
                 } else {
                     addField(result, getFieldName(field), getSimpleValue(field, what));
                 }
@@ -129,6 +133,15 @@ public class DefaultSerializer implements Serializer {
     public void addField(List<NameValuePair> params, String name, String value) {
         if (value != null) {
             params.add(new BasicNameValuePair(prefix + "[" + name.toUpperCase() + "]", value));
+        }
+    }
+
+    public void addFileField(List<NameValuePair> params, String name, BitrixFile bitrixFile) {
+        if (bitrixFile.getContent() != null) {
+            params.add(new BasicNameValuePair(prefix + "[" + name.toUpperCase() + "][fileData][0]",
+                    bitrixFile.getFileName()));
+            params.add(new BasicNameValuePair(prefix + "[" + name.toUpperCase() + "][fileData][1]",
+                    Base64.getEncoder().encodeToString(bitrixFile.getContent())));
         }
     }
 
